@@ -9,3 +9,4 @@ if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image)
     st.success("App working fine ✅")
+    st.write(prediction)

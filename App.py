@@ -1,21 +1,30 @@
 import streamlit as st
-from PIL import Image
+import tensorflow as tf
 import numpy as np
-
-st.set_page_config(page_title="Plant Disease App")
+from PIL import Image
 
 st.title("🌿 Plant Disease Detection App")
-st.write("Upload a leaf image to continue")
 
-# Upload image
-uploaded_file = st.file_uploader("Choose an image", type=["jpg", "png", "jpeg"])
+@st.cache_resource
+def load_model():
+    model = tf.keras.models.load_model("plant_disease_model.keras")
+    return model
 
-if uploaded_file is not None:
+model = load_model()
+
+class_names = ["Healthy", "Diseased"]
+
+uploaded_file = st.file_uploader("Upload Leaf Image", type=["jpg", "png", "jpeg"])
+
+if uploaded_file:
     image = Image.open(uploaded_file)
+    st.image(image, use_container_width=True)
 
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    img = image.resize((224, 224))
+    img = np.array(img) / 255.0
+    img = np.expand_dims(img, axis=0)
 
-    # Fake prediction (temporary)
-    st.markdown("### 🧠 Result")
-    st.success("Prediction system abhi connect nahi hai")
-    st.info("Next step: TensorFlow model add karna hoga")
+    prediction = model.predict(img)
+    class_index = np.argmax(prediction)
+
+    st.success(f"Prediction: {class_names[class_index]}")
